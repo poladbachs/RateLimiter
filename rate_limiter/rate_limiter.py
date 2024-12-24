@@ -18,4 +18,16 @@ class RateLimiter:
         with self.lock:
             self.rate_limit_history.append(time.time())
         
+    def recent_count(self):
+        self.update_history()
+        return len(self.rate_limit_history)
     
+    def update_history(self):
+        period_sec = self.period_sec
+        now = time.time()
+
+        def is_recent(tm):
+            return now - period_sec <= tm
+        
+        with self.lock:
+            self.rate_limit_history = list(filter(is_recent, self.rate_limit_history))
