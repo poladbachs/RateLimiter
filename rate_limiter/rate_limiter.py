@@ -9,3 +9,13 @@ class RateLimiter:
         self.lock = threading.Lock()
         self.wait_sec = wait_sec
     
+    def rate_limit(self):
+        while True:
+            if self.recent_count < self.count:
+                break
+            time.sleep(self.wait_sec)
+
+        with self.lock:
+            self.rate_limit_history.append(time.time())
+        
+    
