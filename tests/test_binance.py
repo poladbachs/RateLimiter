@@ -1,6 +1,6 @@
 from unittest import TestCase
 from rate_limiter.binance import binance_limits, binance_wrap_defs
-from tests.wrap_object_test_helper import test_wrap_defs
+from wrap_object_test_helper import test_wrap_defs
 
 class TestBinance(TestCase):
     def test_binance(self):

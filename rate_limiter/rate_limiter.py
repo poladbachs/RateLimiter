@@ -11,7 +11,7 @@ class RateLimiter:
     
     def rate_limit(self):
         while True:
-            if self.recent_count < self.count:
+            if self.recent_count() < self.count:
                 break
             time.sleep(self.wait_sec)
 
