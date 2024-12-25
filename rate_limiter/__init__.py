@@ -30,3 +30,11 @@ def scale_limits(limits=None, scale=None):
             limit['period_sec'] /= limit['count']
             limit['count'] = 1
     return limits
+
+def _extract_matched_defs(method=None, wrap_defs=None):
+    matched_defs = []
+    for wrap_def in wrap_defs:
+        regex = re.compile(wrap_def['regex'])
+        if regex.search(method):
+            matched_defs.append(wrap_def)
+    return matched_defs
