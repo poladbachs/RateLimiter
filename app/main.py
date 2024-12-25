@@ -1,28 +1,30 @@
 import asyncio
-from rate_limiters.binance import binance_limits
-from rate_limiters.bybit import bybit_limits
-from rate_limiter import RateLimiterGroup
-import ccxt.async_support as ccxt_async
+from helpers import simulate_api_calls, create_rate_limiter_group
 
-async def fetch_binance_info(rate_group):
-    binance = ccxt_async.binance()
-    for _ in range(10):  # Example: 10 API calls
-        await rate_group.rate_limit(['binance_all'])
-        data = await binance.public_get_exchangeinfo()
-        print(f"Binance symbols fetched: {len(data['symbols'])}")
-    await binance.close()
+async def main_simulation(rate_limiter_group):
+    while True:
+        print("Starting Binance simulation...")
+        await simulate_api_calls("Binance", rate_limiter_group, 1000)  # Simulating 1000 requests
 
-async def fetch_bybit_info(rate_group):
-    bybit = ccxt_async.bybit()
-    for _ in range(5):  # Example: 5 API calls
-        await rate_group.rate_limit(['bybit_all'])
-        data = await bybit.fetch_markets()
-        print(f"Bybit symbols fetched: {len(data)}")
-    await bybit.close()
+        print("Starting Bybit simulation...")
+        await simulate_api_calls("Bybit", rate_limiter_group, 800)  # Simulating 800 requests
+
+        await asyncio.sleep(1)  # Short pause for burst simulation
+
+async def monitor_rate_limits(rate_limiter_group):
+    while True:
+        print("\nRate Limits Status:")
+        for tag, info in rate_limiter_group.status_info().items():
+            print(f"Tag: {tag}, Recent Count: {info['recent_count']}")
+        await asyncio.sleep(1)  # Refresh every second for HFT monitoring
 
 async def main():
-    rate_group = RateLimiterGroup(binance_limits() + bybit_limits())
-    await asyncio.gather(fetch_binance_info(rate_group), fetch_bybit_info(rate_group))
+    rate_limiter_group = create_rate_limiter_group()
+
+    await asyncio.gather(
+        main_simulation(rate_limiter_group),
+        monitor_rate_limits(rate_limiter_group),
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())

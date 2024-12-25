@@ -16,6 +16,7 @@ class AsyncRateLimiter:
                 self.call_times.popleft()
             if len(self.call_times) >= self.max_calls:
                 sleep_time = self.period_sec - (current_time - self.call_times[0])
+                print(f"Throttling for {sleep_time:.2f} seconds...")
                 await asyncio.sleep(sleep_time)
                 self.call_times.popleft()
             self.call_times.append(time.time())
