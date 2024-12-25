@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limits Dashboard</title>
+</head>
+<body>
+    <h1>Rate Limits Dashboard</h1>
+    <h2>Rate Limits</h2>
+    <pre id="rate-limits"></pre>
+    <h2>Price Aggregation</h2>
+    <pre id="price-aggregation"></pre>
+    <h2>Call Metrics</h2>
+    <pre id="call-metrics"></pre>
+
+    <script>
+        async function fetchDashboard() {
+            const response = await fetch('/dashboard');
+            const data = await response.json();
+            document.getElementById('rate-limits').innerText = JSON.stringify(data.rate_limits, null, 2);
+            document.getElementById('price-aggregation').innerText = JSON.stringify(data.prices, null, 2);
+            document.getElementById('call-metrics').innerText = JSON.stringify(data.call_metrics, null, 2);
+        }
+        setInterval(fetchDashboard, 1000);
+        fetchDashboard();
+    </script>
+</body>
+</html>

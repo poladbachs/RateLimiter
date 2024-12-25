@@ -16,17 +16,13 @@ class AsyncRateLimiter:
                 self.call_times.popleft()
             if len(self.call_times) >= self.max_calls:
                 sleep_time = self.period_sec - (current_time - self.call_times[0])
-                print(f"Throttling for {sleep_time:.2f} seconds...")
                 await asyncio.sleep(sleep_time)
                 self.call_times.popleft()
             self.call_times.append(time.time())
 
 class RateLimiterGroup:
     def __init__(self, limits):
-        self.limiters = {
-            limit['tag']: AsyncRateLimiter(limit['period_sec'], limit['count'])
-            for limit in limits
-        }
+        self.limiters = {limit['tag']: AsyncRateLimiter(limit['period_sec'], limit['count']) for limit in limits}
 
     async def rate_limit(self, tags):
         tasks = [self.limiters[tag].acquire() for tag in tags if tag in self.limiters]
@@ -34,6 +30,4 @@ class RateLimiterGroup:
             await asyncio.gather(*tasks)
 
     def status_info(self):
-        return {
-            tag: {'recent_count': len(limiter.call_times)} for tag, limiter in self.limiters.items()
-        }
+        return {tag: {'recent_count': len(limiter.call_times)} for tag, limiter in self.limiters.items()}
