@@ -13,3 +13,12 @@ class RateLimiterGroup:
             if self.limits[i]['tag'] in tags:
                 for j in range(count):
                     self.limiters[i].rate_limit()
+
+    def status_info(self):
+        result = []
+        for i in range(len(self.limits)):
+            result.append({
+                'tag': self.limits[i]['tag'],
+                'recent_count': self.limiters[i].recent_count()
+            })
+        return result
