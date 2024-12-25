@@ -4,7 +4,7 @@
       {"tag": "binance_send_order", "period_sec": 1, "count": 300}
   ],
   "bybit": [
-      {"tag": "bybit_all", "period_sec": 1, "count": 500},
+      {"tag": "bybit_all", "period_sec": 1, "count": 1000},
       {"tag": "bybit_send_order", "period_sec": 1, "count": 200}
   ]
 }

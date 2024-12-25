@@ -53,15 +53,17 @@ async def main():
     bybit = ccxt.bybit()
 
     try:
+        # Run fetchers and monitoring concurrently
         await asyncio.gather(
-            fetch_binance_ticker("Binance", binance, rate_limiter_group, tracker, app),
-            fetch_bybit_ticker("Bybit", bybit, rate_limiter_group, tracker, app),
             monitor_rate_limits(rate_limiter_group, app),
             start_dashboard(app),
+            fetch_binance_ticker("Binance", binance, rate_limiter_group, tracker, app),
+            fetch_bybit_ticker("Bybit", bybit, rate_limiter_group, tracker, app),
         )
     finally:
         await binance.close()
         await bybit.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
