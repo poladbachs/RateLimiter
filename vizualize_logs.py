@@ -1,47 +1,29 @@
 # visualize_logs.py
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import seaborn as sns
+from datetime import datetime
 
-def visualize_logs(log_file="rate_limit_log.csv"):
-    # Load logs
-    df = pd.read_csv(log_file)
-    
-    # Convert Timestamp to datetime
-    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-    
-    # Sort by Timestamp
-    df.sort_values('Timestamp', inplace=True)
-    
-    # Add a column for throttled calls
-    df['Throttled'] = df['Status'].apply(lambda x: 1 if 'throttled' in x else 0)
-    
-    # Create separate dataframes for allowed and throttled
-    allowed = df[df['Throttled'] == 0]
-    throttled = df[df['Throttled'] == 1]
-    
-    # Plotting
-    plt.figure(figsize=(15, 7))
-    
-    # Plot allowed calls
-    plt.scatter(allowed['Timestamp'], allowed['API Name'], color='green', label='Allowed', alpha=0.6)
-    
-    # Plot throttled calls
-    plt.scatter(throttled['Timestamp'], throttled['API Name'], color='red', label='Throttled', alpha=0.6)
-    
-    plt.title('API Call Status Over Time')
-    plt.xlabel('Timestamp')
-    plt.ylabel('API Name / Thread')
-    plt.legend()
-    plt.grid(True)
-    
-    # Improve x-axis formatting
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-    plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    plt.show()
+log_file = "rate_limit_log.csv"
+df = pd.read_csv(log_file)
 
-if __name__ == "__main__":
-    visualize_logs()
+df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+df['Minute'] = df['Timestamp'].dt.floor('min')
+
+# Normalize 'Status' by mapping any 'throttled*' to 'throttled'
+df['Status'] = df['Status'].apply(lambda x: 'throttled' if 'throttled' in x else x)
+
+time_series = df.groupby(['Minute', 'API Name', 'Status']).size().reset_index(name='Count')
+pivot_time = time_series.pivot_table(index=['Minute', 'API Name'], columns='Status', values='Count', fill_value=0).reset_index()
+
+bar_data = df.groupby(['API Name', 'Status']).size().reset_index(name='Count')
+pivot_bar = bar_data.pivot(index='API Name', columns='Status', values='Count').fillna(0)
+
+pivot_bar.plot(kind='bar', figsize=(10, 6))
+plt.title('Allowed vs Throttled API Calls per Exchange')
+plt.xlabel('API Name')
+plt.ylabel('Number of Calls')
+plt.xticks(rotation=0)
+plt.legend(title='Status')
+plt.tight_layout()
+plt.show()
