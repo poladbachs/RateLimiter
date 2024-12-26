@@ -34,7 +34,6 @@ async def fetch_binance_websocket(app):
             tracker.log_call(0)
             prices.append(price)
 
-            # Update price aggregation
             app['price_aggregation']["average_binance_ws"] = round(sum(prices) / len(prices), 2)
             app['price_aggregation']["max_binance_ws"] = round(max(prices), 2)
 

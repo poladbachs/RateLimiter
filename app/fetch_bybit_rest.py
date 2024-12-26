@@ -46,7 +46,6 @@ async def fetch_bybit_ticker(app):
             tracker.log_call(latency)
             price = ticker['last']
 
-            # Update price aggregation
             prices.append(price)
             app['price_aggregation']["average_bybit"] = round(sum(prices) / len(prices), 2)
             app['price_aggregation']["max_bybit"] = round(max(prices), 2)
