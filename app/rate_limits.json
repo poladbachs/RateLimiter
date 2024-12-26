@@ -1,10 +1,8 @@
 {
   "binance": [
-      {"tag": "binance_all", "period_sec": 1, "count": 1200},
-      {"tag": "binance_send_order", "period_sec": 1, "count": 300}
+      {"tag": "binance_all", "period_sec": 1, "count": 1200}
   ],
   "bybit": [
-      {"tag": "bybit_all", "period_sec": 1, "count": 1000},
-      {"tag": "bybit_send_order", "period_sec": 1, "count": 200}
+      {"tag": "bybit_all", "period_sec": 1, "count": 1200}
   ]
 }

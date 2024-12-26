@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limits Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        header {
+            background: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            padding: 1rem;
+        }
+        h2 {
+            color: #333;
+        }
+        pre {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Rate Limits Dashboard</h1>
+    </header>
+    <div class="container">
+        <h2>Rate Limits</h2>
+        <pre id="rate-limits">Loading...</pre>
+        <h2>Price Aggregation</h2>
+        <pre id="price-aggregation">Loading...</pre>
+        <h2>Call Metrics</h2>
+        <pre id="call-metrics">Loading...</pre>
+    </div>
+
+    <script>
+        async function fetchDashboard() {
+            try {
+                const response = await fetch('/dashboard');
+                const data = await response.json();
+
+                document.getElementById('rate-limits').innerText = JSON.stringify(data.rate_limits, null, 2);
+                document.getElementById('price-aggregation').innerText = JSON.stringify(data.prices, null, 2);
+                document.getElementById('call-metrics').innerText = JSON.stringify(data.call_metrics, null, 2);
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+            }
+        }
+
+        setInterval(fetchDashboard, 500); // Update every 0.5 seconds
+        fetchDashboard();
+    </script>
+</body>
+</html>
