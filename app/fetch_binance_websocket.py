@@ -1,6 +1,6 @@
 import asyncio
-import websockets
 import json
+import websockets
 from aiohttp import web
 from helpers import StatsTracker
 import os
@@ -27,32 +27,25 @@ async def fetch_binance_websocket(app):
     prices = []
 
     async with websockets.connect(url) as websocket:
-        print("Connected to Binance WebSocket.")
         while True:
-            try:
-                message = await websocket.recv()
-                data = json.loads(message)
+            message = await websocket.recv()
+            data = json.loads(message)
+            price = float(data['p'])
+            tracker.log_call(0)
+            prices.append(price)
 
-                # Extract price
-                price = float(data['p'])
-                prices.append(price)
-                tracker.log_call(0)  # Assume near-zero latency for WebSocket
+            # Update price aggregation
+            app['price_aggregation']["average_binance_ws"] = round(sum(prices) / len(prices), 2)
+            app['price_aggregation']["max_binance_ws"] = round(max(prices), 2)
 
-                # Update price aggregation dynamically
-                app['price_aggregation']["average_binance"] = round(sum(prices) / len(prices), 2)
-                app['price_aggregation']["max_binance"] = round(max(prices), 2)
-
-                print(f"Binance BTC Price: {price}")
-            except Exception as e:
-                print(f"WebSocket error: {str(e)}")
-                break
+            print(f"Binance WebSocket - Price: {price}")
 
 async def main():
     app = {
         "tracker": StatsTracker(),
         "price_aggregation": {
-            "average_binance": 0.0,
-            "max_binance": 0.0,
+            "average_binance_ws": 0.0,
+            "max_binance_ws": 0.0,
         },
     }
 

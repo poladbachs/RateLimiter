@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Dashboard</title>
+    <title>Rate Limits Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
         header { background: #007bff; color: white; padding: 1rem; text-align: center; }
@@ -14,7 +14,7 @@
 </head>
 <body>
     <header>
-        <h1>WebSocket Dashboard</h1>
+        <h1>Rate Limits Dashboard</h1>
     </header>
     <div class="container">
         <h2>Price Aggregation</h2>
@@ -30,8 +30,6 @@
             document.getElementById('price-aggregation').innerText = JSON.stringify(data.prices, null, 2);
             document.getElementById('call-metrics').innerText = JSON.stringify(data.call_metrics, null, 2);
         }
-
-        setInterval(fetchDashboard, 500); // Update every 0.5 seconds
         fetchDashboard();
     </script>
 </body>

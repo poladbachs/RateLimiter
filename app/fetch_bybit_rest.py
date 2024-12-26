@@ -2,7 +2,7 @@ import asyncio
 import time
 import ccxt.async_support as ccxt
 from aiohttp import web
-from helpers import create_rate_limiter_group, StatsTracker
+from helpers import StatsTracker, create_rate_limiter_group
 import os
 
 async def start_dashboard(app):
@@ -13,7 +13,6 @@ async def start_dashboard(app):
             "call_metrics": app['tracker'].get_aggregate_metrics(),
         })
 
-    # Serve the static HTML for the dashboard
     static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
     dashboard_app = web.Application()
     dashboard_app.router.add_get("/dashboard", handle_dashboard)
@@ -28,12 +27,11 @@ async def fetch_bybit_ticker(app):
     rate_limiter_group = app['rate_limiter']
     bybit = ccxt.bybit()
     max_calls = 1000
-    semaphore = asyncio.Semaphore(100)  # High concurrency to maximize performance
-
+    semaphore = asyncio.Semaphore(100)  # Adjust concurrency
     prices = []
 
     async def fetch_single_bybit(call_id):
-        async with semaphore:  # Limit concurrent requests to avoid overloading
+        async with semaphore:
             await rate_limiter_group.rate_limit(["bybit_all"])
             start_time = time.time()
             try:
@@ -42,23 +40,17 @@ async def fetch_bybit_ticker(app):
                 tracker.log_call(latency)
                 price = ticker['last']
 
-                # Update price aggregation dynamically
+                # Update price aggregation
                 prices.append(price)
                 app['price_aggregation']["average_bybit"] = round(sum(prices) / len(prices), 2)
                 app['price_aggregation']["max_bybit"] = round(max(prices), 2)
 
-                print(f"Bybit - Call {call_id} completed, price: {price}")
+                print(f"Bybit REST - Call {call_id} completed, price: {price}")
             except Exception as e:
-                print(f"Bybit - Call {call_id} failed: {str(e)}")
+                print(f"Bybit REST - Call {call_id} failed: {str(e)}")
 
-    async def fetch_all():
-        tasks = [fetch_single_bybit(i + 1) for i in range(max_calls)]
-        await asyncio.gather(*tasks)
-
-    try:
-        await fetch_all()
-    finally:
-        await bybit.close()
+    tasks = [fetch_single_bybit(i + 1) for i in range(max_calls)]
+    await asyncio.gather(*tasks)
 
 async def main():
     app = {
@@ -71,7 +63,6 @@ async def main():
         },
     }
 
-    # Run the fetcher and dashboard concurrently
     await asyncio.gather(fetch_bybit_ticker(app), start_dashboard(app))
 
 if __name__ == "__main__":

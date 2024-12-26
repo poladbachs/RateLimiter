@@ -27,11 +27,11 @@ async def fetch_binance_ticker(app):
     rate_limiter_group = app['rate_limiter']
     binance = ccxt.binance()
     max_calls = 1000
-    semaphore = asyncio.Semaphore(100)  # Adjust concurrency as needed
+    semaphore = asyncio.Semaphore(100)  # Adjust concurrency
     prices = []
 
     async def fetch_single_binance(call_id):
-        async with semaphore:  # Limit concurrent requests
+        async with semaphore:
             await rate_limiter_group.rate_limit(["binance_all"])
             start_time = time.time()
             try:
@@ -45,9 +45,9 @@ async def fetch_binance_ticker(app):
                 app['price_aggregation']["average_binance"] = round(sum(prices) / len(prices), 2)
                 app['price_aggregation']["max_binance"] = round(max(prices), 2)
 
-                print(f"Binance - Call {call_id} completed, price: {price}")
+                print(f"Binance REST - Call {call_id} completed, price: {price}")
             except Exception as e:
-                print(f"Binance - Call {call_id} failed: {str(e)}")
+                print(f"Binance REST - Call {call_id} failed: {str(e)}")
 
     tasks = [fetch_single_binance(i + 1) for i in range(max_calls)]
     await asyncio.gather(*tasks)
