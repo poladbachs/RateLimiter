@@ -27,30 +27,40 @@ async def fetch_bybit_ticker(app):
     rate_limiter_group = app['rate_limiter']
     bybit = ccxt.bybit()
     max_calls = 1000
-    semaphore = asyncio.Semaphore(100)  # Adjust concurrency
+    batch_size = 100
     prices = []
 
+    async def fetch_batch(batch_id):
+        tasks = []
+        for i in range(batch_size):
+            call_id = batch_id * batch_size + i + 1
+            tasks.append(fetch_single_bybit(call_id))
+        await asyncio.gather(*tasks)
+
     async def fetch_single_bybit(call_id):
-        async with semaphore:
-            await rate_limiter_group.rate_limit(["bybit_all"])
-            start_time = time.time()
-            try:
-                ticker = await bybit.fetch_ticker('BTC/USDT')
-                latency = time.time() - start_time
-                tracker.log_call(latency)
-                price = ticker['last']
+        await rate_limiter_group.rate_limit(["bybit_all"])
+        start_time = time.time()
+        try:
+            ticker = await bybit.fetch_ticker('BTC/USDT')
+            latency = time.time() - start_time
+            tracker.log_call(latency)
+            price = ticker['last']
 
-                # Update price aggregation
-                prices.append(price)
-                app['price_aggregation']["average_bybit"] = round(sum(prices) / len(prices), 2)
-                app['price_aggregation']["max_bybit"] = round(max(prices), 2)
+            # Update price aggregation
+            prices.append(price)
+            app['price_aggregation']["average_bybit"] = round(sum(prices) / len(prices), 2)
+            app['price_aggregation']["max_bybit"] = round(max(prices), 2)
 
-                print(f"Bybit REST - Call {call_id} completed, price: {price}")
-            except Exception as e:
-                print(f"Bybit REST - Call {call_id} failed: {str(e)}")
+            print(f"Bybit REST - Call {call_id} completed, price: {price}")
+        except Exception as e:
+            print(f"Bybit REST - Call {call_id} failed: {str(e)}")
 
-    tasks = [fetch_single_bybit(i + 1) for i in range(max_calls)]
-    await asyncio.gather(*tasks)
+    try:
+        total_batches = max_calls // batch_size
+        for batch_id in range(total_batches):
+            await fetch_batch(batch_id)
+    finally:
+        await bybit.close()
 
 async def main():
     app = {
