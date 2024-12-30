@@ -1,4 +1,4 @@
-# High-Performance Rate Limiter and Trading Simulation Dashboard  
+# High-Frequency Trading Simulation and Rate Limiting Dashboard
 ![ezgif-3-1236e33076](https://github.com/user-attachments/assets/f8ccf4e7-55cf-4891-9db7-adc9c96e1bff)
 
 ## Overview  
